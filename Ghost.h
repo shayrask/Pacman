@@ -1,5 +1,4 @@
 #pragma once
-#include "GameBoard.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_oldnames.h>
 #include <SDL3/SDL_video.h>
@@ -17,14 +16,21 @@
 
 using namespace std;
 
+class GameBoard;
+
 class Ghost
 {
 private:
-	SDL_Window* win = GameBoard::getWindow();
-	SDL_Renderer* renderer = GameBoard::getRenderer();
+	static SDL_Window* win;
+	static SDL_Renderer* renderer;
 	struct Position {
 		int row;
 		int col;
+	};
+
+	struct Node {
+		int row, col;
+		vector<Position> path;
 	};
 
 	Position ghostPosition;
@@ -38,11 +44,15 @@ public:
 	void init(int row, int col, int R, int G, int B);
 	static const int GHOST_SIZE = 10;
 	static int ghost[GHOST_SIZE][GHOST_SIZE];
-	static vector<Position> destination;
+	static vector<Position> Possibledestinations;
+	Position target;
 	vector<Position> ghostCourse;
+
+
 	void updateGhost();
 	Position newDestination();
 	void renderGhost(int x, int y);
+	vector<Position> findPath(Position start, Position end);
 
 	static int getGhostSize() { return GHOST_SIZE; }
     int getGhostLocRow() { return this->ghostPosition.row; }

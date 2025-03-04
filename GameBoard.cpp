@@ -5,6 +5,11 @@
 
 using namespace std;
 
+SDL_Window* GameBoard::window;
+SDL_Renderer* GameBoard::renderer;
+float GameBoard::width;
+float GameBoard::height;
+
 
 GameBoard::GameBoard() {
     SDL_Init(SDL_INIT_VIDEO);
@@ -15,12 +20,20 @@ GameBoard::GameBoard() {
     setRunning(true);
     srand(time(0));
 	setRandNum(rand() % 61);
+
+    ghostY = new Ghost();
+    ghostP = new Ghost();
+    ghostR = new Ghost();
 }
 
 GameBoard::~GameBoard() {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
+
+    delete ghostY;
+    delete ghostP;
+    delete ghostR;
 }
 
 
@@ -156,7 +169,7 @@ void GameBoard::renderGame() {
                 SDL_RenderFillRect(renderer, &cellRect);
             }
             else if (maze[row][col] == 0) {
-				Ghost::destination.push_back({ row, col });
+				Ghost::Possibledestinations.push_back({ row, col });
                 if (getRandNum() == 0)
                 {
                     renderPacman(row, col, getPackmanOpen(), getPackmanState());
@@ -180,7 +193,7 @@ void GameBoard::renderGame() {
             }
             else if (maze[row][col] == 3)
             {
-                Ghost::destination.push_back({ row, col });
+                Ghost::Possibledestinations.push_back({ row, col });
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
                 int centerX = cellRect.x + cellRect.w / 2;
@@ -192,45 +205,22 @@ void GameBoard::renderGame() {
             else if (maze[row][col] == 5 && row == getPackmanLocRow() && col == getPackmanLocCol())
             {
                 renderPacman(row, col, getPackmanOpen(), getPackmanState());
-                Ghost::destination.push_back({ row, col });
+                Ghost::Possibledestinations.push_back({ row, col });
             }
-            /*else if(maze[row][col] == 4)
-            {
-                Ghost::destination.push_back({ row, col });
-				if (row == ghostPath[0].row && col == ghostPath[0].col)
-				{
-					renderGhost(row, col, 255, 0, 0);
-					setRLoc(row, col);
-					maze[row][col] = 5;
-
-				}
-                else if(row == ghostPath[1].row && col == ghostPath[1].col)
-                {
-                    renderGhost(row, col, 255, 192, 203);
-					setPLoc(row, col);
-					maze[row][col] = 5;
-                }
-                else if (row == ghostPath[2].row && col == ghostPath[2].col)
-                {
-                    renderGhost(row, col, 0, 255, 255);
-					setYLoc(row, col);
-					maze[row][col] = 5;
-                }
-            }*/
-			if (row == ghostY.getGhostLocRow() && col == ghostY.getGhostLocCol())
+			if (row == ghostY->getGhostLocRow() && col == ghostY->getGhostLocCol())
 			{
-				ghostY.renderGhost(row, col);
-                Ghost::destination.push_back({ row, col });
+				ghostY->renderGhost(row, col);
+                Ghost::Possibledestinations.push_back({ row, col });
 			}
-			else if (row == ghostR.getGhostLocRow() && col == ghostR.getGhostLocCol())
+			else if (row == ghostR->getGhostLocRow() && col == ghostR->getGhostLocCol())
 			{
-				ghostR.renderGhost(row, col);
-                Ghost::destination.push_back({ row, col });
+				ghostR->renderGhost(row, col);
+                Ghost::Possibledestinations.push_back({ row, col });
 			}
-			else if (row == ghostP.getGhostLocRow() && col == ghostP.getGhostLocCol())
+			else if (row == ghostP->getGhostLocRow() && col == ghostP->getGhostLocCol())
 			{
-				ghostP.renderGhost(row, col);
-                Ghost::destination.push_back({ row, col });
+				ghostP->renderGhost(row, col);
+                Ghost::Possibledestinations.push_back({ row, col });
 			}
         }
     }
@@ -293,124 +283,30 @@ void GameBoard::updatePacman() {
     }
 }
 
-//void GameBoard::updateRGhost() {
-//	if (ghostCourse.empty())
-//	{
-//		ghostCourse = ghostPath;
-//        Position ghostRdest = newDestination();
-//	}
-//
-//	Position ghostRdest = newDestination(); 
-//
-//    vector<Direction> possibleDirs;
-//
-//    if (isValidMove(getGhostRLocRow(), getGhostRLocCol() - 1) && dirR != LEFT) possibleDirs.push_back(LEFT);
-//    if (isValidMove(getGhostRLocRow(), getGhostRLocCol() + 1) && dirR != RIGHT) possibleDirs.push_back(RIGHT);
-//    if (isValidMove(getGhostRLocRow() - 1, getGhostRLocCol()) && dirR != UP) possibleDirs.push_back(UP);
-//    if (isValidMove(getGhostRLocRow() + 1, getGhostRLocCol()) && dirR != DOWN) possibleDirs.push_back(DOWN);
-//
-//    if (!possibleDirs.empty()) {
-//        dirR = possibleDirs[rand() % possibleDirs.size()];
-//    }
-//
-//    switch (dirR) {
-//    case UP:    setGhostRLocRow(getGhostRLocRow() - 1); break;
-//    case DOWN:  setGhostRLocRow(getGhostRLocRow() + 1); break;
-//    case LEFT:  setGhostRLocCol(getGhostRLocCol() - 1); break;
-//    case RIGHT: setGhostRLocCol(getGhostRLocCol() + 1); break;
-//    default: break;
-//    }
-//}
-//
-//void GameBoard::updatePGhost() {
-//    static bool initialized = false;
-//    if (!initialized) {
-//        srand(time(nullptr));
-//        initialized = true;
-//    }
-//
-//    vector<Direction> possibleDirs;
-//
-//    if (isValidMove(getGhostPLocRow(), getGhostPLocCol() - 1) && dirP != LEFT) possibleDirs.push_back(LEFT);
-//    if (isValidMove(getGhostPLocRow(), getGhostPLocCol() + 1) && dirP != RIGHT) possibleDirs.push_back(RIGHT);
-//    if (isValidMove(getGhostPLocRow() - 1, getGhostPLocCol()) && dirP != UP) possibleDirs.push_back(UP);
-//    if (isValidMove(getGhostPLocRow() + 1, getGhostPLocCol()) && dirP != DOWN) possibleDirs.push_back(DOWN);
-//
-//    if (!possibleDirs.empty()) {
-//        dirP = possibleDirs[rand() % possibleDirs.size()];
-//    }
-//
-//    switch (dirP) {
-//    case UP:    setGhostPLocRow(getGhostPLocRow() - 1); break;
-//    case DOWN:  setGhostPLocRow(getGhostPLocRow() + 1); break;
-//    case LEFT:  setGhostPLocCol(getGhostPLocCol() - 1); break;
-//    case RIGHT: setGhostPLocCol(getGhostPLocCol() + 1); break;
-//    default: break;
-//    }
-//}
-//
-//void GameBoard::updateYGhost() {
-//    static bool initialized = false;
-//    if (!initialized) {
-//        srand(time(nullptr));
-//        initialized = true;
-//    }
-//
-//    vector<Direction> possibleDirs;
-//
-//    if (isValidMove(getGhostYLocRow(), getGhostYLocCol() - 1) && dirY != LEFT) possibleDirs.push_back(LEFT);
-//    if (isValidMove(getGhostYLocRow(), getGhostYLocCol() + 1) && dirY != RIGHT) possibleDirs.push_back(RIGHT);
-//    if (isValidMove(getGhostYLocRow() - 1, getGhostYLocCol()) && dirY != UP) possibleDirs.push_back(UP);
-//    if (isValidMove(getGhostYLocRow() + 1, getGhostYLocCol()) && dirY != DOWN) possibleDirs.push_back(DOWN);
-//
-//    if (!possibleDirs.empty()) {
-//        dirY = possibleDirs[rand() % possibleDirs.size()];
-//    }
-//
-//    switch (dirY) {
-//    case UP:    setGhostYLocRow(getGhostYLocRow() - 1); break;
-//    case DOWN:  setGhostYLocRow(getGhostYLocRow() + 1); break;
-//    case LEFT:  setGhostYLocCol(getGhostYLocCol() - 1); break;
-//    case RIGHT: setGhostYLocCol(getGhostYLocCol() + 1); break;
-//    default: break;
-//    }
-//}
-
 bool GameBoard::isValidMove(int newX, int newY) {
 	return maze[newX][newY] != 1;
 }
 
-//GameBoard::Position GameBoard::newDestination() {
-//    static bool initialized = false;
-//    if (!initialized) {
-//        srand(time(nullptr));
-//        initialized = true;
-//    }
-//
-//    Position ghostdest = destination[rand() % destination.size()];
-//	return ghostdest;
-//}
-
 void GameBoard::run() {
     renderMenu();
 	shuffleGhosts();
-	ghostR.init(ghostPath[0].row, ghostPath[0].col, 255, 0, 0);
-	ghostP.init(ghostPath[1].row, ghostPath[1].col, 255, 192, 203);
-	ghostY.init(ghostPath[2].row, ghostPath[2].col, 0, 255, 255);
+	ghostR->init(ghostPath[0].row, ghostPath[0].col, 255, 0, 0);
+	ghostP->init(ghostPath[1].row, ghostPath[1].col, 255, 192, 203);
+	ghostY->init(ghostPath[2].row, ghostPath[2].col, 0, 255, 255);
 
     while (getRunning()) {
         handleEvents();
         updatePacman();
 
-        if (getFrameCount() % getGhostUpdateRate() == 0)
+        if (getFrameCount() % getGhostUpdateRate() == 0 && getcurrentState() == GameState::GAMEPLAY)
         {
-            /*updateRGhost();
-            updatePGhost();
-            updateYGhost();*/
+			ghostP->updateGhost();
+			ghostR->updateGhost();
+			ghostY->updateGhost();
 			setFrameCount(0);
         }
-		setFrameCount(getFrameCount() + 1);
-        render(); 
+		setFrameCount(getFrameCount() + 1); 
+        render();
         SDL_Delay(16); 
     }
     setcurrentState(GameState::GAMEOVER);

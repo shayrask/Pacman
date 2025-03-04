@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include "Ghost.h"
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_oldnames.h>
 #include <SDL3/SDL_video.h>
@@ -18,12 +17,11 @@
 
 using namespace std;
 
+class Ghost;
+
 class GameBoard
 {
 private:
-	Ghost ghostY;
-	Ghost ghostP;
-	Ghost ghostR;
 	static SDL_Window* window;
 	static SDL_Renderer* renderer;
 	SDL_Texture* texture;
@@ -41,7 +39,7 @@ private:
 	int pacmanUpdateRate = 4; 
 	int eventHandleRate = 4;
 	int ghostUpdateRate = 16;
-	int frameCount = 0;
+	int frameCount = 1;
 
 	enum class GameState {
 		MAIN_MENU,
@@ -90,6 +88,9 @@ public:
 										{14,11}, {14,12}, {14, 13}, {14, 14}, {14,15}, {14,16},
 										{15,11}, {15,12}, {15, 13}, {15, 14}, {15,15}, {15,16}
 	};
+	Ghost* ghostY;
+	Ghost* ghostP;
+	Ghost* ghostR;
 
 
 
@@ -99,7 +100,7 @@ public:
 	void render();
 	void updatePacman();
 	void run();
-	bool isValidMove(int row, int col);
+	static bool isValidMove(int row, int col);
 
 	static SDL_Window* getWindow() { return window; }
 	static SDL_Renderer* getRenderer() { return renderer; }
