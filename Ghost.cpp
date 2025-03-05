@@ -8,6 +8,7 @@ using namespace std;
 SDL_Window* Ghost::win;
 SDL_Renderer* Ghost::renderer;
 vector<Ghost::Position> Ghost::Possibledestinations;
+Ghost::GhostState currentState;
 
 Ghost::Ghost() : ghostPosition{ 0, 0 }, R(255), G(255), B(255) {}
 Ghost::~Ghost() {}
@@ -18,6 +19,7 @@ void Ghost::init(int row, int col, int R, int G, int B) {
     this->R = R;
     this->G = G;
     this->B = B;
+	this->currentState = GhostState::ALIVE;
 
     this->renderer = GameBoard::getRenderer();
     this->win = GameBoard::getWindow();
@@ -48,21 +50,28 @@ void Ghost::renderGhost(int row, int col) {
 }
 
 void Ghost::updateGhost() {
-    if (ghostCourse.empty())
-    {
-        this->target = this->newDestination();
-		this->ghostCourse = findPath(this->ghostPosition, this->target);
-    }
-
-    if (!this->ghostCourse.empty()) {
-        Position nextStep = this->ghostCourse.front(); 
-        this->ghostCourse.erase(this->ghostCourse.begin()); 
-
-        if (GameBoard::isValidMove(nextStep.row, nextStep.col)) {
-            this->ghostPosition = nextStep;
+    if (currentState == GhostState::ALIVE || currentState == GhostState::EATABLE) {
+        if (ghostCourse.empty())
+        {
+            this->target = this->newDestination();
+            this->ghostCourse = findPath(this->ghostPosition, this->target);
         }
-        else {
-            this->ghostCourse.clear();
+
+        if (!this->ghostCourse.empty()) {
+            Position nextStep = this->ghostCourse.front();
+            this->ghostCourse.erase(this->ghostCourse.begin());
+
+            if (GameBoard::isValidMove(nextStep.row, nextStep.col)) {
+                this->ghostPosition = nextStep;
+            }
+            else {
+                this->ghostCourse.clear();
+            }
+        }
+	}
+    else {
+        if (this->ghostPosition.row != this->deadPosition.row || this->ghostPosition.col != this->deadPosition.col) {
+            this->ghostPosition = this->deadPosition;
         }
     }
 }

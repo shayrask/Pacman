@@ -1,6 +1,10 @@
 ﻿#include "GameBoard.h"
 #include <iostream>
+#include <string.h>
+#include <sstream>
 #include "Ghost.h"
+#include <SDL3_ttf/SDL_ttf.h>
+#include <fstream>
 #define M_PI 3.14159265358979323846
 
 using namespace std;
@@ -21,9 +25,13 @@ GameBoard::GameBoard() {
     srand(time(0));
 	setRandNum(rand() % 61);
 
-    ghostY = new Ghost();
+    ghostB = new Ghost();
     ghostP = new Ghost();
     ghostR = new Ghost();
+
+	ghostB->deadPosition = { 14, 13 };
+	ghostP->deadPosition = { 14, 14 };
+	ghostR->deadPosition = { 14, 15 };
 }
 
 GameBoard::~GameBoard() {
@@ -31,7 +39,7 @@ GameBoard::~GameBoard() {
     SDL_DestroyWindow(window);
     SDL_Quit();
 
-    delete ghostY;
+    delete ghostB;
     delete ghostP;
     delete ghostR;
 }
@@ -61,7 +69,34 @@ void GameBoard::handleEvents() {
 				{
 					setPackmanLocRow(getPackmanLocRow() - 1);
 					setPackmanState(3);
-					maze[getPackmanLocRow()][getPackmanLocCol()] = 5;
+					if (maze[getPackmanLocRow()][getPackmanLocCol()] == 0)
+					{
+                        maze[getPackmanLocRow()][getPackmanLocCol()] = 5;
+						addScore(10);
+					}
+					else if (maze[getPackmanLocRow()][getPackmanLocCol()] == 3)
+					{
+						maze[getPackmanLocRow()][getPackmanLocCol()] = 5;
+						addScore(50);
+						GameBoard::ghostEatAbleTime = SDL_GetTicks() + 5000;
+                        if (ghostR->currentState != Ghost::GhostState::DEAD)
+                        {
+                            ghostR->currentState = Ghost::GhostState::EATABLE;
+                        }
+                        if (ghostP->currentState != Ghost::GhostState::DEAD)
+                        {
+                            ghostP->currentState = Ghost::GhostState::EATABLE;
+                        }
+                        if (ghostB->currentState != Ghost::GhostState::DEAD)
+                        {
+                            ghostB->currentState = Ghost::GhostState::EATABLE;
+                        }
+                        setGhostUpdateRate(10);
+                        if (ghostR->currentState != Ghost::GhostState::DEAD) { ghostR->setRGB(100, 140, 255); }
+                        if (ghostP->currentState != Ghost::GhostState::DEAD) { ghostP->setRGB(100, 140, 255); }
+                        if (ghostB->currentState != Ghost::GhostState::DEAD) { ghostB->setRGB(100, 140, 255); }
+					}
+					
 				}
                 break;
             case SDL_SCANCODE_DOWN:
@@ -69,7 +104,33 @@ void GameBoard::handleEvents() {
                 {
                     setPackmanLocRow(getPackmanLocRow() + 1);
                     setPackmanState(4);
-                    maze[getPackmanLocRow()][getPackmanLocCol()] = 5;
+                    if (maze[getPackmanLocRow()][getPackmanLocCol()] == 0)
+                    {
+                        maze[getPackmanLocRow()][getPackmanLocCol()] = 5;
+                        addScore(10);
+                    }
+                    else if (maze[getPackmanLocRow()][getPackmanLocCol()] == 3)
+                    {
+                        maze[getPackmanLocRow()][getPackmanLocCol()] = 5;
+                        addScore(50);
+                        GameBoard::ghostEatAbleTime = SDL_GetTicks() + 5000;
+                        if (ghostR->currentState != Ghost::GhostState::DEAD)
+                        {
+                            ghostR->currentState = Ghost::GhostState::EATABLE;
+                        }
+                        if (ghostP->currentState != Ghost::GhostState::DEAD)
+                        {
+                            ghostP->currentState = Ghost::GhostState::EATABLE;
+                        }
+                        if (ghostB->currentState != Ghost::GhostState::DEAD)
+                        {
+                            ghostB->currentState = Ghost::GhostState::EATABLE;
+                        }
+                        setGhostUpdateRate(10);
+                        if (ghostR->currentState != Ghost::GhostState::DEAD) { ghostR->setRGB(100, 140, 255); }
+                        if (ghostP->currentState != Ghost::GhostState::DEAD) { ghostP->setRGB(100, 140, 255); }
+                        if (ghostB->currentState != Ghost::GhostState::DEAD) { ghostB->setRGB(100, 140, 255); }
+                    }
                 }
                 break;
             case SDL_SCANCODE_LEFT:
@@ -77,26 +138,130 @@ void GameBoard::handleEvents() {
                 {
                     setPackmanLocCol(getMazeCols() - 1);
                     setPackmanState(2);
-                    maze[getPackmanLocRow()][getPackmanLocCol()] = 5;
+                    if (maze[getPackmanLocRow()][getPackmanLocCol()] == 0)
+                    {
+                        maze[getPackmanLocRow()][getPackmanLocCol()] = 5;
+                        addScore(10);
+                    }
+                    else if (maze[getPackmanLocRow()][getPackmanLocCol()] == 3)
+                    {
+                        maze[getPackmanLocRow()][getPackmanLocCol()] = 5;
+                        addScore(50);
+                        GameBoard::ghostEatAbleTime = SDL_GetTicks() + 5000;
+                        if (ghostR->currentState != Ghost::GhostState::DEAD)
+                        {
+                            ghostR->currentState = Ghost::GhostState::EATABLE;
+                        }
+                        if (ghostP->currentState != Ghost::GhostState::DEAD)
+                        {
+                            ghostP->currentState = Ghost::GhostState::EATABLE;
+                        }
+                        if (ghostB->currentState != Ghost::GhostState::DEAD)
+                        {
+                            ghostB->currentState = Ghost::GhostState::EATABLE;
+                        }
+                        setGhostUpdateRate(10);
+                        if (ghostR->currentState != Ghost::GhostState::DEAD) { ghostR->setRGB(100, 140, 255); }
+                        if (ghostP->currentState != Ghost::GhostState::DEAD) { ghostP->setRGB(100, 140, 255); }
+                        if (ghostB->currentState != Ghost::GhostState::DEAD) { ghostB->setRGB(100, 140, 255); }
+                    }
                 }
                 else if (isValidMove(getPackmanLocRow(), getPackmanLocCol() - 1))
                 {
                     setPackmanLocCol(getPackmanLocCol() - 1);
                     setPackmanState(2);
-                    maze[getPackmanLocRow()][getPackmanLocCol()] = 5;
+                    if (maze[getPackmanLocRow()][getPackmanLocCol()] == 0)
+                    {
+                        maze[getPackmanLocRow()][getPackmanLocCol()] = 5;
+                        addScore(10);
+                    }
+                    else if (maze[getPackmanLocRow()][getPackmanLocCol()] == 3)
+                    {
+                        maze[getPackmanLocRow()][getPackmanLocCol()] = 5;
+                        addScore(50);
+                        GameBoard::ghostEatAbleTime = SDL_GetTicks() + 5000;
+                        if (ghostR->currentState != Ghost::GhostState::DEAD)
+                        {
+                            ghostR->currentState = Ghost::GhostState::EATABLE;
+                        }
+                        if (ghostP->currentState != Ghost::GhostState::DEAD)
+                        {
+                            ghostP->currentState = Ghost::GhostState::EATABLE;
+                        }
+                        if (ghostB->currentState != Ghost::GhostState::DEAD)
+                        {
+                            ghostB->currentState = Ghost::GhostState::EATABLE;
+                        }
+                        setGhostUpdateRate(10);
+                        if (ghostR->currentState != Ghost::GhostState::DEAD) { ghostR->setRGB(100, 140, 255); }
+                        if (ghostP->currentState != Ghost::GhostState::DEAD) { ghostP->setRGB(100, 140, 255); }
+                        if (ghostB->currentState != Ghost::GhostState::DEAD) { ghostB->setRGB(100, 140, 255); }
+                    }
                 }
                 break;
             case SDL_SCANCODE_RIGHT:
                 if (getPackmanLocCol() == getMazeCols() - 1) {
                     setPackmanLocCol(0);
                     setPackmanState(1);
-                    maze[getPackmanLocRow()][getPackmanLocCol()] = 5;
+                    if (maze[getPackmanLocRow()][getPackmanLocCol()] == 0)
+                    {
+                        maze[getPackmanLocRow()][getPackmanLocCol()] = 5;
+                        addScore(10);
+                    }
+                    else if (maze[getPackmanLocRow()][getPackmanLocCol()] == 3)
+                    {
+                        maze[getPackmanLocRow()][getPackmanLocCol()] = 5;
+                        addScore(50);
+                        GameBoard::ghostEatAbleTime = SDL_GetTicks() + 5000;
+                        if (ghostR->currentState != Ghost::GhostState::DEAD)
+                        {
+                            ghostR->currentState = Ghost::GhostState::EATABLE;
+                        }
+                        if (ghostP->currentState != Ghost::GhostState::DEAD)
+                        {
+                            ghostP->currentState = Ghost::GhostState::EATABLE;
+                        }
+                        if (ghostB->currentState != Ghost::GhostState::DEAD)
+                        {
+                            ghostB->currentState = Ghost::GhostState::EATABLE;
+                        }
+                        setGhostUpdateRate(10);
+                        if (ghostR->currentState != Ghost::GhostState::DEAD) { ghostR->setRGB(100, 140, 255); }
+                        if (ghostP->currentState != Ghost::GhostState::DEAD) { ghostP->setRGB(100, 140, 255); }
+                        if (ghostB->currentState != Ghost::GhostState::DEAD) { ghostB->setRGB(100, 140, 255); }
+                    }
                 }
                 else if (isValidMove(getPackmanLocRow(), getPackmanLocCol() + 1))
                 {
                     setPackmanLocCol(getPackmanLocCol() + 1);
                     setPackmanState(1);
-                    maze[getPackmanLocRow()][getPackmanLocCol()] = 5;
+                    if (maze[getPackmanLocRow()][getPackmanLocCol()] == 0)
+                    {
+                        maze[getPackmanLocRow()][getPackmanLocCol()] = 5;
+                        addScore(10);
+                    }
+                    else if (maze[getPackmanLocRow()][getPackmanLocCol()] == 3)
+                    {
+                        maze[getPackmanLocRow()][getPackmanLocCol()] = 5;
+                        addScore(50);
+                        GameBoard::ghostEatAbleTime = SDL_GetTicks() + 5000;
+                        if (ghostR->currentState != Ghost::GhostState::DEAD)
+                        {
+                            ghostR->currentState = Ghost::GhostState::EATABLE;
+                        }
+                        if (ghostP->currentState != Ghost::GhostState::DEAD)
+                        {
+                            ghostP->currentState = Ghost::GhostState::EATABLE;
+                        }
+                        if (ghostB->currentState != Ghost::GhostState::DEAD)
+                        {
+                            ghostB->currentState = Ghost::GhostState::EATABLE;
+                        }
+                        setGhostUpdateRate(10);
+                        if (ghostR->currentState != Ghost::GhostState::DEAD) { ghostR->setRGB(100, 140, 255); }   
+                        if (ghostP->currentState != Ghost::GhostState::DEAD) { ghostP->setRGB(100, 140, 255); }
+                        if (ghostB->currentState != Ghost::GhostState::DEAD) { ghostB->setRGB(100, 140, 255); }
+                    }
                 }
                 break;
             }
@@ -143,12 +308,32 @@ void GameBoard::renderGameOver() {
     SDL_RenderClear(renderer);
 
     SDL_Texture* gameOverTexture = IMG_LoadTexture(renderer, "GameOver.png");
-    if (!gameOverTexture) {
-        printf("Error loading image\n");
-    }
 
     gameOverButton = { (getWidth() / 2) - 150, (getHeight() / 2) - 100, 300, 200 };
     SDL_RenderTexture(renderer, gameOverTexture, NULL, &gameOverButton);
+
+    //TTF_Font* font = TTF_OpenFont("C:\\Users\\shayr\\gisha.ttf", 36); 
+
+    //SDL_Color textColor = { 255, 255, 255, 255 }; 
+    //string scoreText = "Score: " + to_string(getScore());
+
+    //SDL_Surface* scoreSurface = TTF_RenderText_Solid(font, scoreText.c_str(), scoreText.size(), textColor);
+    //SDL_Texture* scoreTexture = SDL_CreateTextureFromSurface(renderer, scoreSurface);
+
+    //int textWidth = scoreSurface->w;
+    //int textHeight = scoreSurface->h;
+    //SDL_FRect scoreRect = {
+    //    (getWidth() / 2) - (textWidth / 2),  
+    //    (getHeight() / 2) + 120,             
+    //    textWidth,
+    //    textHeight
+    //};
+
+    //SDL_RenderTexture(renderer, scoreTexture, NULL, &scoreRect);
+
+    //SDL_DestroySurface(scoreSurface);
+    //SDL_DestroyTexture(scoreTexture);
+    //TTF_CloseFont(font);
 
     SDL_RenderPresent(renderer);
 }
@@ -207,9 +392,9 @@ void GameBoard::renderGame() {
                 renderPacman(row, col, getPackmanOpen(), getPackmanState());
                 Ghost::Possibledestinations.push_back({ row, col });
             }
-			if (row == ghostY->getGhostLocRow() && col == ghostY->getGhostLocCol())
+			if (row == ghostB->getGhostLocRow() && col == ghostB->getGhostLocCol())
 			{
-				ghostY->renderGhost(row, col);
+				ghostB->renderGhost(row, col);
                 Ghost::Possibledestinations.push_back({ row, col });
 			}
 			else if (row == ghostR->getGhostLocRow() && col == ghostR->getGhostLocCol())
@@ -292,7 +477,7 @@ void GameBoard::run() {
 	shuffleGhosts();
 	ghostR->init(ghostPath[0].row, ghostPath[0].col, 255, 0, 0);
 	ghostP->init(ghostPath[1].row, ghostPath[1].col, 255, 192, 203);
-	ghostY->init(ghostPath[2].row, ghostPath[2].col, 0, 255, 255);
+	ghostB->init(ghostPath[2].row, ghostPath[2].col, 0, 255, 255);
 
     while (getRunning()) {
         handleEvents();
@@ -302,15 +487,69 @@ void GameBoard::run() {
         {
 			ghostP->updateGhost();
 			ghostR->updateGhost();
-			ghostY->updateGhost();
+			ghostB->updateGhost();
 			setFrameCount(0);
         }
-		setFrameCount(getFrameCount() + 1); 
+		setFrameCount(getFrameCount() + 1);  
         render();
+		isGameover();
+		if (SDL_GetTicks() > GameBoard::ghostEatAbleTime) {
+			ghostR->setRGB(255, 0, 0);
+			ghostP->setRGB(255, 192, 203);
+			ghostB->setRGB(0, 255, 255);
+			setGhostUpdateRate(16);
+			ghostEatAbleTime = 0;
+		}
         SDL_Delay(16); 
     }
     setcurrentState(GameState::GAMEOVER);
 	render();
+    SDL_Delay(3000);
+}
+
+void GameBoard::isGameover() {
+	if (ghostR->getcurrentState() == Ghost::GhostState::EATABLE || ghostP->getcurrentState() == Ghost::GhostState::EATABLE || ghostB->getcurrentState() == Ghost::GhostState::EATABLE)
+	{
+        if (ghostP->getGhostLocRow() == getPackmanLocRow() && ghostP->getGhostLocCol() == getPackmanLocCol())
+        {
+			ghostP->setcurrentState(Ghost::GhostState::DEAD);
+			ghostP->setGhostLocRow(14);
+            ghostP->setGhostLocCol(14);
+			addScore(200);
+        }
+        else if (ghostR->getGhostLocRow() == getPackmanLocRow() && ghostR->getGhostLocCol() == getPackmanLocCol())
+        {
+            ghostR->setcurrentState(Ghost::GhostState::DEAD);
+			ghostR->setGhostLocRow(14);
+			ghostR->setGhostLocCol(15);
+			addScore(200);
+        }
+        else if (ghostB->getGhostLocRow() == getPackmanLocRow() && ghostB->getGhostLocCol() == getPackmanLocCol())
+        {
+            ghostB->setcurrentState(Ghost::GhostState::DEAD);
+			ghostB->setGhostLocRow(14);
+			ghostB->setGhostLocCol(13);
+			addScore(200);
+        }
+	}
+	else if (ghostR->getcurrentState() == Ghost::GhostState::DEAD && ghostP->getcurrentState() == Ghost::GhostState::DEAD && ghostB->getcurrentState() == Ghost::GhostState::DEAD) {
+		setRunning(false);
+	}
+    else
+    {
+        if (ghostP->getGhostLocRow() == getPackmanLocRow() && ghostP->getGhostLocCol() == getPackmanLocCol())
+        {
+            setRunning(false);
+        }
+        else if (ghostR->getGhostLocRow() == getPackmanLocRow() && ghostR->getGhostLocCol() == getPackmanLocCol())
+        {
+            setRunning(false);
+        }
+        else if (ghostB->getGhostLocRow() == getPackmanLocRow() && ghostB->getGhostLocCol() == getPackmanLocCol())
+        {
+            setRunning(false);
+        }
+    }
 }
 
 void GameBoard::init(const char* title, int xpos, int ypos, int width, int height, bool fullscreen) {

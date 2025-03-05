@@ -40,6 +40,7 @@ private:
 	int eventHandleRate = 4;
 	int ghostUpdateRate = 16;
 	int frameCount = 1;
+	int score = 0;
 
 	enum class GameState {
 		MAIN_MENU,
@@ -75,6 +76,7 @@ public:
 	GameBoard();
 	~GameBoard();
 
+	
 	static const int MAZE_ROWS = 31;
 	static const int MAZE_COLS = 28;
 	static int maze[MAZE_ROWS][MAZE_COLS];
@@ -88,9 +90,10 @@ public:
 										{14,11}, {14,12}, {14, 13}, {14, 14}, {14,15}, {14,16},
 										{15,11}, {15,12}, {15, 13}, {15, 14}, {15,15}, {15,16}
 	};
-	Ghost* ghostY;
+	Ghost* ghostB;
 	Ghost* ghostP;
 	Ghost* ghostR;
+	int ghostEatAbleTime = 0;
 
 
 
@@ -101,6 +104,7 @@ public:
 	void updatePacman();
 	void run();
 	static bool isValidMove(int row, int col);
+	void isGameover();
 
 	static SDL_Window* getWindow() { return window; }
 	static SDL_Renderer* getRenderer() { return renderer; }
@@ -119,6 +123,7 @@ public:
 	int getEventHandleRate() { return eventHandleRate; }
 	int getPacmanUpdateRate() { return pacmanUpdateRate; }
 	int getGhostUpdateRate() { return ghostUpdateRate; }
+	int getScore() { return score; }
 	
 	
     void setPackmanLocRow(int row) { packmanLocRow = row; }
@@ -129,8 +134,10 @@ public:
 	void setPackmanOpen(bool state) { pacmanOpen = state; }
 	void setPackmanState(int state) { packmanState = state; }
 	void setFrameCount(int count) { frameCount = count; }
+	void setGhostUpdateRate(int rate) { ghostUpdateRate = rate; }
 	void setWidth(int w) { width = w; }
 	void setHeight(int h) { height = h; }
+	void addScore(int s) { score += s; }
 	
 
     void drawCircle(SDL_Renderer* renderer, int centerX, int centerY, int radius, bool Packman);

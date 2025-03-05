@@ -38,6 +38,12 @@ private:
 	
 
 public:
+	enum class GhostState {
+		ALIVE,
+		DEAD,
+		EATABLE
+	};
+
 	Ghost();
 	~Ghost();
 
@@ -46,7 +52,9 @@ public:
 	static int ghost[GHOST_SIZE][GHOST_SIZE];
 	static vector<Position> Possibledestinations;
 	Position target;
+	Position deadPosition;
 	vector<Position> ghostCourse;
+	GhostState currentState;
 
 
 	void updateGhost();
@@ -60,10 +68,16 @@ public:
 	int getR() { return this->R; }
 	int getG() { return this->G; }
 	int getB() { return this->B; }
+	GhostState getcurrentState() { return currentState; }
 	
 	void setLoc(int row, int col) { this->ghostPosition.row = row; this->ghostPosition.col = col; }
 	void setGhostLocRow(int row) { this->ghostPosition.row = row; }
 	void setGhostLocCol(int col) { this->ghostPosition.col = col; }
+	void setR(int R) { this->R = R; }
+	void setG(int G) { this->G = G; }
+	void setB(int B) { this->B = B; }
+	void setRGB(int R, int G, int B) { this->R = R; this->G = G; this->B = B; }
+	void setcurrentState(GhostState newState) { currentState = newState; }
 };
 
 
