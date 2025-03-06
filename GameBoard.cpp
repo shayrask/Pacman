@@ -653,6 +653,9 @@ void GameBoard::run() {
         if (SDL_GetTicks() > GameBoard::ghostEatAbleTime) {
             // Restore original ghost colors
             for (int i = 0; i < getNumGhosts(); i++) {
+                if (ghosts[i].getcurrentState() != Ghost::GhostState::DEAD) {
+					ghosts[i].setcurrentState(Ghost::GhostState::ALIVE);
+                }
                 switch (i) {
                 case 0: ghosts[i].setRGB(255, 0, 0); break;       // Red
                 case 1: ghosts[i].setRGB(255, 192, 203); break;   // Pink
@@ -704,34 +707,34 @@ void GameBoard::isGameover() {
         // Check if the ghost is in an eatable state
         if (ghosts[i].getcurrentState() == Ghost::GhostState::EATABLE) {
             // Check if Pac-Man collides with any ghost
-            for (int i = 0; i < getNumGhosts(); i++) {
-                if (ghosts[i].getGhostLocRow() == getPackmanLocRow() &&
-                    ghosts[i].getGhostLocCol() == getPackmanLocCol()) {
+            for (int j = 0; j < getNumGhosts(); j++) {
+                if (ghosts[j].getGhostLocRow() == getPackmanLocRow() &&
+                    ghosts[j].getGhostLocCol() == getPackmanLocCol()) {
 
                     // Change ghost state to DEAD and move it to a respawn position
-                    ghosts[i].setcurrentState(Ghost::GhostState::DEAD);
+                    ghosts[j].setcurrentState(Ghost::GhostState::DEAD);
 
                     // Set respawn position based on ghost index
-                    switch (i) {
-                    case 0: ghosts[i].setGhostLocRow(14); ghosts[i].setGhostLocCol(11); addScore(200); break;
-                    case 1: ghosts[i].setGhostLocRow(14); ghosts[i].setGhostLocCol(12); addScore(200); break;
-                    case 2: ghosts[i].setGhostLocRow(14); ghosts[i].setGhostLocCol(13); addScore(200); break;
-                    case 3: ghosts[i].setGhostLocRow(14); ghosts[i].setGhostLocCol(14); addScore(200); break;
-                    case 4: ghosts[i].setGhostLocRow(14); ghosts[i].setGhostLocCol(15); addScore(200); break;
+                    switch (j) {
+                    case 0: ghosts[j].setGhostLocRow(14); ghosts[j].setGhostLocCol(11); addScore(200); break;
+                    case 1: ghosts[j].setGhostLocRow(14); ghosts[j].setGhostLocCol(12); addScore(200); break;
+                    case 2: ghosts[j].setGhostLocRow(14); ghosts[j].setGhostLocCol(13); addScore(200); break;
+                    case 3: ghosts[j].setGhostLocRow(14); ghosts[j].setGhostLocCol(14); addScore(200); break;
+                    case 4: ghosts[j].setGhostLocRow(14); ghosts[j].setGhostLocCol(15); addScore(200); break;
                     default: break;
                     }
                 }
             }
         }
         // Count ghosts that are in the DEAD state
-        else if (ghosts[i].getcurrentState() == Ghost::GhostState::DEAD) {
+        if (ghosts[i].getcurrentState() == Ghost::GhostState::DEAD) {
             NumOfDeadGhosts++;
         }
         // Check if Pac-Man collides with an active (non-eatable) ghost
-        else {
-            for (int i = 0; i < getNumGhosts(); i++) {
-                if (ghosts[i].getGhostLocRow() == getPackmanLocRow() &&
-                    ghosts[i].getGhostLocCol() == getPackmanLocCol()) {
+        else if(ghosts[i].getcurrentState() != Ghost::GhostState::EATABLE && ghosts[i].getcurrentState() != Ghost::GhostState::DEAD) {
+            for (int k = 0; k < getNumGhosts(); k++) {
+                if (ghosts[k].getGhostLocRow() == getPackmanLocRow() &&
+                    ghosts[k].getGhostLocCol() == getPackmanLocCol()) {
 
                     setRunning(false); // End the game
                     return;
